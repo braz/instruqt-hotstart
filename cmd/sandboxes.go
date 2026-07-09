@@ -6,14 +6,14 @@ import (
 
 func init() {
 	c := &cobra.Command{
-		Use:   "configs",
-		Short: "List sandbox configs for a team (use their IDs with create --configs)",
-		RunE:  runConfigs,
+		Use:   "sandboxes",
+		Short: "List sandboxes for a team (use their IDs with create --sandbox-ids)",
+		RunE:  runSandboxes,
 	}
 	rootCmd.AddCommand(c)
 }
 
-func runConfigs(cmd *cobra.Command, _ []string) error {
+func runSandboxes(cmd *cobra.Command, _ []string) error {
 	team, err := teamSlug()
 	if err != nil {
 		return err
@@ -25,10 +25,10 @@ func runConfigs(cmd *cobra.Command, _ []string) error {
 	ctx, cancel := signalContext()
 	defer cancel()
 
-	configs, err := client.SandboxConfigs(ctx, team)
+	sandboxes, err := client.Sandboxes(ctx, team)
 	if err != nil {
 		return err
 	}
 	asJSON, _ := cmd.Flags().GetBool("json")
-	return renderConfigs(cmd.OutOrStdout(), configs, asJSON)
+	return renderSandboxes(cmd.OutOrStdout(), sandboxes, asJSON)
 }

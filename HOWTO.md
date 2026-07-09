@@ -79,19 +79,20 @@ anything later overrides anything earlier:
 
 That means a flag always wins, which is handy for one-off overrides.
 
-## Step 3: Find your config IDs
+## Step 3: Find your sandbox IDs
 
-A hot start pool is built from **sandbox configs**, not tracks. The API rejects
-track IDs for pool creation, so you first need the config ID(s) for the content
-you want to warm up. List them for your team:
+A hot start pool is built from **sandboxes**, not tracks. The API rejects track
+IDs for pool creation, so you first need the sandbox ID(s) for the content you
+want to warm up. List them for your team:
 
 ```sh
-./instruqt-hotstart configs
+./instruqt-hotstart sandboxes
 ```
 
-This prints a table of `ID`, `SLUG`, `NAME`, and `VERSION`. Note the `ID` of the
-config whose `SLUG` matches the content you want — you pass it to `--configs` in
-the next step. (`--json` works here too if you want to script it.)
+This prints a table of `ID`, `SLUG`, `NAME`, and `VERSION`. Note the `ID` (e.g.
+`0bgr0ddoarzk`) of the sandbox whose `SLUG` matches the content you want — you
+pass it to `--sandbox-ids` in the next step. (`--json` works here too if you
+want to script it.)
 
 ## Step 4: Preview a pool before creating it (dry run)
 
@@ -103,7 +104,7 @@ you about anything risky, but it does **not** create anything or cost you money.
   --type shared \
   --name spring-workshop \
   --size 50 \
-  --configs cfg-abc123 \
+  --sandbox-ids 0bgr0ddoarzk \
   --auto-refill \
   --starts-at +2h \
   --ends-at +150m \
@@ -114,10 +115,10 @@ A few things to know about the flags:
 
 - `--type` is **required** and must be `dedicated` or `shared`.
 - `--name` is **required** — give the pool a short, recognisable name.
-- `--configs` holds the sandbox config ID(s) from Step 3 (comma-separated, or
+- `--sandbox-ids` holds the sandbox ID(s) from Step 3 (comma-separated, or
   repeat the flag). This is what the pool is built from.
 - `--tracks` exists but the API **rejects it** for pool creation; the tool warns
-  if you use it. Use `--configs` instead.
+  if you use it. Use `--sandbox-ids` instead.
 - `--auto-refill` (optional) keeps the pool topped up as sandboxes are claimed.
 - `--starts-at` and `--ends-at` accept either a full timestamp
   (`2026-07-09T14:00:00Z`) or a relative offset from now (`+2h`, `+90m`,
@@ -157,7 +158,7 @@ When the dry run looks right, remove `--dry-run`:
   --type shared \
   --name spring-workshop \
   --size 50 \
-  --configs cfg-abc123 \
+  --sandbox-ids 0bgr0ddoarzk \
   --auto-refill \
   --starts-at +2h \
   --ends-at +150m
@@ -241,9 +242,9 @@ yourself so the pool does not run forever.
 - **"validation failed"** — read the message; fix the input, or add `--force`
   if you really mean it.
 - **"tracks: must be blank; config_versions: cannot be blank"** — you passed
-  `--tracks`, but pools are created from sandbox configs. Run
-  `./instruqt-hotstart configs` to find the config ID and pass it with
-  `--configs` instead.
+  `--tracks`, but pools are created from sandboxes. Run
+  `./instruqt-hotstart sandboxes` to find the sandbox ID and pass it with
+  `--sandbox-ids` instead.
 
 ## Where to learn more
 

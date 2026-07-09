@@ -34,7 +34,9 @@ const hotStartPoolsQuery = `query hotStartPools($teamSlug: String, $paging: Pagi
 	}
 }`
 
-const sandboxConfigsQuery = `query sandboxConfigs($teamSlug: String) {
+// sandboxesQuery lists a team's sandboxes. The GraphQL operation is
+// `sandboxConfigs` (the wire name); we surface the results as sandboxes.
+const sandboxesQuery = `query sandboxConfigs($teamSlug: String) {
 	sandboxConfigs(teamSlug: $teamSlug) {
 		id
 		slug
@@ -46,25 +48,25 @@ const sandboxConfigsQuery = `query sandboxConfigs($teamSlug: String) {
 // defaultPageSize is the number of pools requested per page when listing.
 const defaultPageSize = 100
 
-// SandboxConfig identifies a sandbox config. Its ID is what a hot start pool's
-// `configs` field expects (the API resolves it to a config version).
-type SandboxConfig struct {
+// Sandbox identifies a sandbox. Its ID (e.g. "0bgr0ddoarzk") is what a hot
+// start pool is built from — pass it to the create command's --sandbox-ids flag.
+type Sandbox struct {
 	ID      string `json:"id"`
 	Slug    string `json:"slug"`
 	Name    string `json:"name"`
 	Version int    `json:"version"`
 }
 
-// SandboxConfigs lists the sandbox configs for a team. Use these IDs with the
-// create command's --configs flag.
-func (c *Client) SandboxConfigs(ctx context.Context, teamSlug string) ([]SandboxConfig, error) {
+// Sandboxes lists the sandboxes for a team. Use these IDs with the create
+// command's --sandbox-ids flag.
+func (c *Client) Sandboxes(ctx context.Context, teamSlug string) ([]Sandbox, error) {
 	var out struct {
-		SandboxConfigs []SandboxConfig `json:"sandboxConfigs"`
+		Sandboxes []Sandbox `json:"sandboxConfigs"`
 	}
-	if err := c.execute(ctx, sandboxConfigsQuery, map[string]any{"teamSlug": teamSlug}, &out); err != nil {
-		return nil, fmt.Errorf("listing sandbox configs for team %s: %w", teamSlug, err)
+	if err := c.execute(ctx, sandboxesQuery, map[string]any{"teamSlug": teamSlug}, &out); err != nil {
+		return nil, fmt.Errorf("listing sandboxes for team %s: %w", teamSlug, err)
 	}
-	return out.SandboxConfigs, nil
+	return out.Sandboxes, nil
 }
 
 // CreateHotStartPool creates a new hot start pool and returns it.

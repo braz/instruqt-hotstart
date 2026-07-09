@@ -37,15 +37,15 @@ supplying it via `INSTRUQT_API_KEY` (see `env.example`). A `config.yaml`
 ## Usage
 
 ```sh
-# Find the sandbox config IDs for your team (pools are keyed by config, not track)
-instruqt-hotstart configs --team my-team
+# Find the sandbox IDs for your team (pools are keyed by sandbox, not track)
+instruqt-hotstart sandboxes --team my-team
 
-# Create a pool (always supply --type, --name, and --configs)
+# Create a pool (always supply --type, --name, and --sandbox-ids)
 instruqt-hotstart create --team my-team --type shared --name spring-workshop --size 50 \
-  --configs cfg-abc,cfg-def --auto-refill --starts-at +2h --ends-at +150m
+  --sandbox-ids 0bgr0ddoarzk,1cfp2eepbsam --auto-refill --starts-at +2h --ends-at +150m
 
 # Preview without sending
-instruqt-hotstart create --team my-team --type shared --name demo --configs cfg-abc \
+instruqt-hotstart create --team my-team --type shared --name demo --sandbox-ids 0bgr0ddoarzk \
   --size 250 --starts-at +45m --dry-run
 
 # List and inspect pools
@@ -56,14 +56,14 @@ instruqt-hotstart get --id <pool-id> --json
 `--starts-at` / `--ends-at` accept RFC3339 (`2026-07-09T14:00:00Z`) or a
 relative offset (`+90m`, `+2h`).
 
-### Pools use configs, not tracks
+### Pools use sandbox IDs, not tracks
 
-The API creates hot start pools from **sandbox config IDs**, not track IDs — it
-rejects `--tracks` for pool creation (`tracks: must be blank; config_versions:
-cannot be blank`). Run `instruqt-hotstart configs --team <team>` to list the
-configs for your team (id, slug, name, version) and pass the matching id(s) to
-`--configs`. The `--tracks` flag remains for completeness but the CLI warns when
-you use it on `create`.
+The API creates hot start pools from **sandbox IDs** (e.g. `0bgr0ddoarzk`), not
+track IDs — it rejects `--tracks` for pool creation (`tracks: must be blank;
+config_versions: cannot be blank`). Run `instruqt-hotstart sandboxes --team
+<team>` to list the sandboxes for your team (id, slug, name, version) and pass
+the matching id(s) to `--sandbox-ids`. The `--tracks` flag remains for
+completeness but the CLI warns when you use it on `create`.
 
 ### Cost guardrails
 

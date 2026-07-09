@@ -19,7 +19,7 @@ const (
 type HotStartPoolInput struct {
 	Type       PoolType   `json:"type,omitempty"`
 	Tracks     []string   `json:"tracks,omitempty"`
-	Configs    []string   `json:"configs,omitempty"`
+	SandboxIDs []string   `json:"configs,omitempty"`
 	Size       *int       `json:"size,omitempty"`
 	Name       *string    `json:"name,omitempty"`
 	AutoRefill *bool      `json:"auto_refill,omitempty"`

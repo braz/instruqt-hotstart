@@ -51,7 +51,7 @@ func TestHotStartPoolInputMarshal_AllFields(t *testing.T) {
 	in := HotStartPoolInput{
 		Type:       PoolTypeDedicated,
 		Tracks:     []string{"t1", "t2"},
-		Configs:    []string{"c1"},
+		SandboxIDs: []string{"c1"},
 		Size:       intPtr(50),
 		Name:       strPtr("workshop"),
 		AutoRefill: boolPtr(true),

@@ -1,0 +1,58 @@
+default_install_hook_types = ["commit-msg", "post-checkout", "pre-commit", "pre-push"]
+minimum_prek_version = "0.4.8"
+
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "trailing-whitespace", stages = ["pre-commit"], priority = 0 },
+  { id = "end-of-file-fixer", stages = ["pre-commit"], priority = 0 },
+  { id = "check-yaml", stages = ["pre-commit"], args = ["--allow-multiple-documents"], priority = 0 },
+  { id = "check-toml", stages = ["pre-commit"], priority = 0 },
+  { id = "check-json", stages = ["pre-commit"], priority = 0 },
+  { id = "check-added-large-files", stages = ["pre-commit"], priority = 0 },
+  { id = "check-merge-conflict", stages = ["pre-commit"], priority = 0 },
+  { id = "check-case-conflict", stages = ["pre-commit"], priority = 0 },
+  { id = "check-symlinks", stages = ["pre-commit"], priority = 0 },
+  { id = "check-executables-have-shebangs", stages = ["pre-commit"], priority = 0 },
+  { id = "mixed-line-ending", stages = ["pre-commit"], args = ["--fix=lf"], priority = 0 },
+  { id = "detect-private-key", stages = ["pre-commit"], priority = 0 },
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+  { id = "trufflehog", name = "TruffleHog", stages = ["pre-commit"], entry = "bash -c 'trufflehog git file://. --since-commit HEAD --results=verified,unknown --fail --no-verification --no-update'", language = "system", priority = 1 }
+]
+
+[[repos]]
+repo = "https://github.com/JoC0de/pre-commit-prettier"
+rev = "v3.9.4" # prek autoupdate will fill this
+hooks = [
+  { id = "prettier", stages = ["pre-commit"], args = ["--write"], types_or = ["ts", "json"], priority = 0 }
+]
+
+[[repos]]
+repo = "https://github.com/compilerla/conventional-pre-commit"
+rev = "v4.4.0" # prek autoupdate will fill this
+hooks = [
+  { id = "conventional-pre-commit", stages = ["commit-msg"], args = ["--strict", "feat", "fix", "chore", "test", "docs", "ci", "refactor"], priority = 0 }
+]
+
+[[repos]]
+repo = "https://github.com/betterleaks/betterleaks"
+rev = "v1.6.1"  # prek autoupdate will fill this
+hooks = [{ id = "betterleaks", stages = ["pre-commit"], priority = 1 }]
+
+[[repos]]
+repo = "https://github.com/zizmorcore/zizmor-pre-commit"
+rev = "v1.26.1"  # prek autoupdate will fill this
+hooks = [{ id = "zizmor", stages = ["pre-commit"], priority = 1 }]
+
+[[repos]]
+repo = "https://github.com/urwithajit9/evnx"
+rev = "v0.3.8" # prek autoupdate will fill this
+hooks = [
+  { id = "evnx-scan", stages = ["pre-commit"], priority = 1},
+  { id = "evnx-validate", stages = ["pre-commit"], priority = 1 },
+  { id = "evnx-scan-push", stages = ["pre-push"], priority = 1 },
+]

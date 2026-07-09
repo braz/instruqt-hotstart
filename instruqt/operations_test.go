@@ -9,18 +9,18 @@ import (
 	"testing"
 )
 
-func TestSandboxConfigs(t *testing.T) {
+func TestSandboxes(t *testing.T) {
 	var cap capturedRequest
 	c := newTestClient(t, http.StatusOK,
-		`{"data":{"sandboxConfigs":[{"id":"cfg1","slug":"my-track","name":"My Track","version":3}]}}`,
+		`{"data":{"sandboxConfigs":[{"id":"0bgr0ddoarzk","slug":"my-track","name":"My Track","version":3}]}}`,
 		&cap)
 
-	configs, err := c.SandboxConfigs(context.Background(), "demo")
+	sandboxes, err := c.Sandboxes(context.Background(), "demo")
 	if err != nil {
-		t.Fatalf("configs: %v", err)
+		t.Fatalf("sandboxes: %v", err)
 	}
-	if len(configs) != 1 || configs[0].ID != "cfg1" || configs[0].Slug != "my-track" || configs[0].Version != 3 {
-		t.Errorf("unexpected configs: %+v", configs)
+	if len(sandboxes) != 1 || sandboxes[0].ID != "0bgr0ddoarzk" || sandboxes[0].Slug != "my-track" || sandboxes[0].Version != 3 {
+		t.Errorf("unexpected sandboxes: %+v", sandboxes)
 	}
 	if cap.variables["teamSlug"] != "demo" {
 		t.Errorf("teamSlug = %v, want demo", cap.variables["teamSlug"])

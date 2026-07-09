@@ -19,8 +19,8 @@ func init() {
 	f := c.Flags()
 	f.String("type", "", "pool type: dedicated or shared")
 	f.Int("size", 0, "sandboxes per track")
-	f.StringSlice("tracks", nil, "track IDs (rejected by the API for pool creation; use --configs)")
-	f.StringSlice("configs", nil, "sandbox config IDs (repeatable or comma-separated; see the `configs` command)")
+	f.StringSlice("tracks", nil, "track IDs (rejected by the API for pool creation; use --sandbox-ids)")
+	f.StringSlice("sandbox-ids", nil, "sandbox IDs, e.g. 0bgr0ddoarzk (repeatable or comma-separated; see the `sandboxes` command)")
 	f.String("name", "", "pool name (required)")
 	f.Bool("auto-refill", false, "auto-refill the pool")
 	f.String("starts-at", "", "scheduled start: RFC3339 or relative (e.g. +1h)")
@@ -53,10 +53,10 @@ func runCreate(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	// The API rejects tracks for pool creation and requires config IDs instead.
+	// The API rejects tracks for pool creation and requires sandbox IDs instead.
 	if len(in.Tracks) > 0 {
 		fmt.Fprintln(os.Stderr, "warning: --tracks is rejected by the API for pool creation; "+
-			"use --configs with sandbox config IDs (run the `configs` command to list them)")
+			"use --sandbox-ids with sandbox IDs (run the `sandboxes` command to list them)")
 	}
 
 	// Apply profile to unset fields.
@@ -124,8 +124,8 @@ func buildInput(cmd *cobra.Command, now time.Time) (instruqt.HotStartPoolInput, 
 	if f.Changed("tracks") {
 		in.Tracks, _ = f.GetStringSlice("tracks")
 	}
-	if f.Changed("configs") {
-		in.Configs, _ = f.GetStringSlice("configs")
+	if f.Changed("sandbox-ids") {
+		in.SandboxIDs, _ = f.GetStringSlice("sandbox-ids")
 	}
 	if f.Changed("name") {
 		s, _ := f.GetString("name")

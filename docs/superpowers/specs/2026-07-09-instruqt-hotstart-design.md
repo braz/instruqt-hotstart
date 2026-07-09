@@ -42,7 +42,7 @@ pages are fetched before returning; `ctx` cancellation aborts the loop.
 |---|---|---|
 | `type` | `HotStartPoolType` | `dedicated` \| `shared` |
 | `tracks` | `[String!]` | track IDs (**rejected by the API for pool creation** — see note below) |
-| `configs` | `[String!]` | sandbox config IDs — **this is what pools are built from** |
+| `configs` | `[String!]` | sandbox IDs (surfaced as `--sandbox-ids`) — **this is what pools are built from** |
 | `size` | `Int` | sandboxes per track |
 | `name` | `String` | pool name (optional in the schema; **required by this tool**) |
 | `auto_refill` | `Boolean` | auto-refill the pool |
@@ -54,14 +54,16 @@ pages are fetched before returning; `ctx` cancellation aborts the loop.
 
 `organization_slug` exists in the schema but is **excluded** from this tool.
 
-**Tracks vs. configs (runtime API behavior, discovered post-launch):** although
-the schema lists both `tracks` and `configs`, the API rejects `tracks` for pool
-creation, returning `tracks: must be blank; config_versions: cannot be blank`.
-Pools must be created from **sandbox config IDs** (`configs`). The tool
-therefore: (a) provides a `configs` command that lists a team's sandbox configs
+**Tracks vs. sandboxes (runtime API behavior, discovered post-launch):**
+although the schema lists both `tracks` and `configs`, the API rejects `tracks`
+for pool creation, returning `tracks: must be blank; config_versions: cannot be
+blank`. Pools must be created from **sandbox IDs** (the wire field is still
+`configs`; the CLI surfaces it as `--sandbox-ids`). The tool therefore:
+(a) provides a `sandboxes` command that lists a team's sandboxes
 (id/slug/name/version) via the `sandboxConfigs(teamSlug:)` query, and (b) warns
-when `--tracks` is used on `create`. The `SandboxConfig` type and
-`Client.SandboxConfigs(ctx, teamSlug)` method live in `instruqt/operations.go`.
+when `--tracks` is used on `create`. The `Sandbox` type and
+`Client.Sandboxes(ctx, teamSlug)` method live in `instruqt/operations.go`
+(the GraphQL operation is `sandboxConfigs`; only the Go/CLI names say sandbox).
 
 ### `HotStartPool` (return) fields we consume
 
@@ -148,7 +150,7 @@ type PoolType string // "dedicated" | "shared"
 type HotStartPoolInput struct {
     Type       PoolType   `json:"type,omitempty"`
     Tracks     []string   `json:"tracks,omitempty"`
-    Configs    []string   `json:"configs,omitempty"`
+    SandboxIDs []string   `json:"configs,omitempty"`
     Size       *int       `json:"size,omitempty"`
     Name       *string    `json:"name,omitempty"`
     AutoRefill *bool      `json:"auto_refill,omitempty"`
@@ -261,7 +263,7 @@ Precedence: explicit flag > env > config file > default.
 ### `create` flags
 
 Map to `HotStartPoolInput`, all overridable: `--type`, `--size`, `--tracks`
-(repeatable/CSV), `--configs`, `--name` (**required**), `--auto-refill`,
+(repeatable/CSV), `--sandbox-ids`, `--name` (**required**), `--auto-refill`,
 `--starts-at` (RFC3339 or relative e.g. `+1h`), `--ends-at`, `--region`,
 `--invite-id`, plus `--profile`, `--registrations`, `--dry-run`, `--force`.
 `--name` is marked required at the cobra level (checked before `Validate`, not
