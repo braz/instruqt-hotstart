@@ -52,7 +52,7 @@ hooks = [{ id = "zizmor", stages = ["pre-commit"], priority = 1 }]
 repo = "https://github.com/urwithajit9/evnx"
 rev = "v0.3.8" # prek autoupdate will fill this
 hooks = [
-  { id = "evnx-scan", stages = ["pre-commit"], priority = 1},
-  { id = "evnx-validate", stages = ["pre-commit"], priority = 1 },
-  { id = "evnx-scan-push", stages = ["pre-push"], priority = 1 },
+  { id = "evnx-scan", stages = ["pre-commit"], args = ["--exclude", ".env"], priority = 1},
+  { id = "evnx-validate", stages = ["pre-commit"], args = ["--env", ".env", "--example", "env.example"], priority = 1 },
+  { id = "evnx-scan-push", stages = ["pre-push"], args = ["--exclude", ".env"], priority = 1 },
 ]
