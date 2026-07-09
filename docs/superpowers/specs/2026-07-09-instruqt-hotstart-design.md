@@ -25,9 +25,16 @@ arguments are deliberately excluded.
 - **Endpoint:** `POST https://play.instruqt.com/graphql`
 - **Auth:** header `Authorization: Bearer <API_KEY>` (key from Settings → API keys)
 - **Mutation:** `createHotStartPool(pool: HotStartPoolInput!): HotStartPool`
-- **Query:** `hotStartPools(organizationSlug: String, teamSlug: String): HotStartPoolConnection`
-  — we use `teamSlug` only and read `nodes: [HotStartPool!]!`.
+- **Query:** `hotStartPools(organizationSlug: String, teamSlug: String, paging: Pagination, ordering: Ordering): HotStartPoolConnection`
+  — we use `teamSlug` and `paging` only. The connection returns
+  `nodes: [HotStartPool!]!` and `pageInfo: PageInfo!`.
 - **Query:** `hotStartPool(id: String!): HotStartPool!`
+
+**Pagination:** `Pagination { First: Int, After: String }` (forward cursor).
+`PageInfo { endCursor: String, hasNextPage: Boolean! }`. `HotStartPools` loops:
+request a page with `First` (default page size, e.g. 100) and `After` =
+previous `endCursor`, accumulating `nodes` until `hasNextPage` is false. All
+pages are fetched before returning; `ctx` cancellation aborts the loop.
 
 ### `HotStartPoolInput` fields
 
@@ -153,7 +160,7 @@ to identifying fields.
 
 ```go
 func (c *Client) CreateHotStartPool(ctx context.Context, in HotStartPoolInput) (*HotStartPool, error)
-func (c *Client) HotStartPools(ctx context.Context, teamSlug string) ([]HotStartPool, error) // reads .nodes
+func (c *Client) HotStartPools(ctx context.Context, teamSlug string) ([]HotStartPool, error) // paginates via pageInfo, returns all nodes
 func (c *Client) HotStartPool(ctx context.Context, id string) (*HotStartPool, error)
 ```
 
@@ -173,12 +180,23 @@ func (in HotStartPoolInput) Validate() (warnings []string, err error)
   - missing required `type`
 - **Warnings** (printed, never block):
   - no `ends_at` set → "indefinite pool, bills continuously"
-  - `starts_at` less than 1h out → "below recommended provisioning lead time"
-  - `size >= 100` with `starts_at` under ~2h → "large pools provision in
-    batches, allow more lead time"
+  - `starts_at` is closer than the **size-tiered lead time** below → "below
+    recommended provisioning lead time for a pool of this size"
 
-Thresholds (1h lead, 100 size, 2h large-pool lead) are named constants so they
-are easy to adjust as guidance evolves.
+**Provisioning lead-time tiers** (larger pools provision in batches and need
+more lead time). The warning fires when `starts_at - now` is less than the
+required lead time for the resolved `size`:
+
+| Size | Required lead time |
+|---|---|
+| `size < 50` | 20 minutes |
+| `50 <= size <= 100` | 30 minutes |
+| `100 < size < 200` | 1 hour |
+| `200 <= size <= 400` | 1 hour 30 minutes |
+| `size > 400` | 1 hour 30 minutes (minimum; test provisioning time) |
+
+The size boundaries and durations are named constants (a single ordered table
+in code) so they are easy to adjust as guidance evolves.
 
 ### Profiles
 
@@ -261,7 +279,10 @@ stderr so `--json` stays pipeable.
 
 - `instruqt/client_test.go` — `httptest.Server` with canned GraphQL envelopes;
   table-driven: success, GraphQL `errors[]`, non-2xx, malformed JSON. Assert
-  request body query/variables and `Authorization` header.
+  request body query/variables and `Authorization` header. Include a
+  multi-page `HotStartPools` case: server returns `hasNextPage: true` then
+  `false`, assert the client sends `After` = prior `endCursor` and accumulates
+  all nodes.
 - `instruqt/hotstart_test.go` — marshal round-trip: unset pointers absent,
   `team_slug` present, no `organization_*` keys ever; `go-cmp` for diffs.
 - `Validate()` — pure table tests: each hard error, each warning, clean case,
@@ -281,6 +302,4 @@ stderr so `--json` stays pipeable.
 
 - Delete / update pool operations.
 - Organization-scoped queries or fields.
-- Pagination beyond `nodes` (assume result set fits one response for v1;
-  revisit if `pageInfo` proves necessary).
 - Filesystem abstraction (afero) — not needed yet.
