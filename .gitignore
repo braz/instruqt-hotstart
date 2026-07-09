@@ -2,4 +2,5 @@ instruqt-hotstart
 *.exe
 .env
 .claude
+CLAUDE.md
 config.yaml
