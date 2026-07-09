@@ -121,6 +121,23 @@ See the Instruqt
 [hot starts best practices](https://docs.instruqt.com/resources/hot-starts-best-practices)
 for sizing and scheduling guidance; the profile values above encode it.
 
+## Agent skill
+
+This repo ships an [agent skill](https://agentskills.io) that teaches AI coding
+agents to drive the CLI correctly:
+
+```
+skills/using-instruqt-hotstart/
+  SKILL.md                          # workflow, setup, quick reference, common mistakes
+  references/instruqt-hotstart-cli.md   # full flag/validation/profile reference
+```
+
+It covers the **find → preview → operate** workflow (`sandboxes` to discover
+IDs → `--dry-run` → `create`), the `.env`/`export` gotcha, and the event
+profiles. Agents that support the [Agent Skills](https://agentskills.io)
+convention discover it automatically; keep it in sync when flags or profiles
+change.
+
 ## Development
 
 ```sh
