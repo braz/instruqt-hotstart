@@ -13,6 +13,7 @@ import (
 func newFlags() *pflag.FlagSet {
 	f := pflag.NewFlagSet("test", pflag.ContinueOnError)
 	f.String("team", "", "")
+	f.String("api-key", "", "")
 	f.String("config", "", "")
 	return f
 }
@@ -60,6 +61,18 @@ func TestConfigPrecedence(t *testing.T) {
 		configureViper(vp, f)
 		if got := vp.GetString("team"); got != "flagteam" {
 			t.Errorf("team = %q, want flagteam", got)
+		}
+	})
+
+	// Regression: a hyphenated config key must resolve from its underscored
+	// env var (api-key -> INSTRUQT_API_KEY), not INSTRUQT_API-KEY.
+	t.Run("hyphenated key from underscored env var", func(t *testing.T) {
+		t.Setenv("INSTRUQT_API_KEY", "secret-key")
+		f := newFlags()
+		vp := viper.New()
+		configureViper(vp, f)
+		if got := vp.GetString("api-key"); got != "secret-key" {
+			t.Errorf("api-key = %q, want secret-key", got)
 		}
 	})
 }

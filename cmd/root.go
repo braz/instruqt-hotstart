@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/eoinbrazil/instruqt-hotstart/instruqt"
@@ -45,6 +46,10 @@ func initConfig() {
 // default config file is not an error.
 func configureViper(vp *viper.Viper, flags *pflag.FlagSet) {
 	vp.SetEnvPrefix("INSTRUQT")
+	// Config keys use hyphens (e.g. "api-key"); env vars use underscores
+	// (INSTRUQT_API_KEY). Without this replacer AutomaticEnv would look for
+	// INSTRUQT_API-KEY and never find the key.
+	vp.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	vp.AutomaticEnv()
 	_ = vp.BindPFlags(flags)
 
