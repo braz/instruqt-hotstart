@@ -29,6 +29,11 @@ Generate an API key in the Instruqt web UI under **Settings → API keys**. Pref
 supplying it via `INSTRUQT_API_KEY` (see `env.example`). A `config.yaml`
 (see `config.example.yaml`) can hold non-secret defaults like `team`.
 
+> **Sourcing a `.env`?** The lines must use `export` (as `env.example` does).
+> `source`-ing plain `KEY=value` lines only sets shell variables, which the CLI
+> — a child process — cannot see, giving a misleading "no API key" error.
+> Alternatively run `set -a; source .env; set +a`.
+
 ## Usage
 
 ```sh

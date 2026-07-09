@@ -83,7 +83,8 @@ func signalContext() (context.Context, context.CancelFunc) {
 func newClient() (*instruqt.Client, error) {
 	apiKey := v.GetString("api-key")
 	if apiKey == "" {
-		return nil, fmt.Errorf("no API key: set --api-key or INSTRUQT_API_KEY")
+		return nil, fmt.Errorf("no API key: set --api-key or export INSTRUQT_API_KEY " +
+			"(note: `source .env` needs `export` on each line, or the CLI cannot see it)")
 	}
 	endpoint := v.GetString("endpoint")
 	if endpoint == "" {

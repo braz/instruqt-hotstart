@@ -61,6 +61,16 @@ cp env.example .env
 source .env
 ```
 
+**Important:** the lines in `.env` must start with `export` (as `env.example`
+does). Sourcing a file with plain `KEY=value` lines only sets shell variables,
+which the CLI — a separate child process — cannot see, and you will get
+"no API key" even though the value looks set. If your file has no `export`
+keywords, either add them or source it like this:
+
+```sh
+set -a; source .env; set +a
+```
+
 If you prefer, non-secret defaults like the team can live in a `config.yaml`
 file (copy `config.example.yaml`). The tool reads settings in this order, so
 anything later overrides anything earlier:
@@ -201,8 +211,11 @@ yourself so the pool does not run forever.
 
 ## Common problems
 
-- **"no API key: set --api-key or INSTRUQT_API_KEY"** — you have not exported
-  `INSTRUQT_API_KEY` (or passed `--api-key`).
+- **"no API key: set --api-key or INSTRUQT_API_KEY"** — the key is not in the
+  CLI's environment. The most common cause is sourcing a `.env` whose lines lack
+  `export`: `source .env` then sets shell variables the CLI cannot see. Add
+  `export` to each line (see `env.example`), or run `set -a; source .env; set +a`.
+  You can also pass `--api-key` directly.
 - **"no team: set --team or INSTRUQT_TEAM"** — set `INSTRUQT_TEAM` or pass
   `--team` for `create` and `list`.
 - **"type is required"** — add `--type dedicated` or `--type shared`. Profiles
