@@ -25,6 +25,8 @@ GraphQL API. Module path: `github.com/eoinbrazil/instruqt-hotstart`.
   `create.go`, `list.go`, `get.go`, `sandboxes.go`, `render.go`.
 - `main.go` — wiring only. `docs/superpowers/specs/2026-07-09-instruqt-hotstart-design.md`
   is the design spec. `README.md` = reference, `HOWTO.md` = new-user guide.
+- `skills/using-instruqt-hotstart/` — agent skill wrapping the CLI (SKILL.md +
+  `references/instruqt-hotstart-cli.md`). Keep it in sync when flags/profiles change.
 
 ## Build / test
 
