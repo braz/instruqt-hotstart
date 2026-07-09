@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
+	"unicode/utf8"
 )
 
 // echoServer captures the last request and returns a canned body/status.
@@ -87,6 +89,26 @@ func TestExecute_HTTPError(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "401") {
 		t.Errorf("error should mention status 401: %v", err)
+	}
+}
+
+func TestTruncate_RuneBoundary(t *testing.T) {
+	// A string of 3-byte runes; truncating at a byte offset that lands
+	// mid-rune must still yield valid UTF-8.
+	s := strings.Repeat("界", 200) // each "界" is 3 bytes
+	got := truncate(s, 256)
+	if !utf8.ValidString(got) {
+		t.Errorf("truncate produced invalid UTF-8: %q", got)
+	}
+	if !strings.HasSuffix(got, "…") {
+		t.Errorf("truncate should append ellipsis, got %q", got)
+	}
+}
+
+func TestWithTimeout(t *testing.T) {
+	c := New("k", WithTimeout(5*time.Second))
+	if c.httpClient.Timeout != 5*time.Second {
+		t.Errorf("timeout = %v, want 5s", c.httpClient.Timeout)
 	}
 }
 

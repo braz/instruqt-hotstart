@@ -31,6 +31,7 @@ func init() {
 	pf.String("team", "", "team slug scoping all operations (or env INSTRUQT_TEAM)")
 	pf.String("endpoint", instruqt.DefaultEndpoint, "GraphQL endpoint (or env INSTRUQT_ENDPOINT)")
 	pf.String("config", "", "config file (default ./config.yaml if present)")
+	pf.Duration("timeout", 30*time.Second, "per-request HTTP timeout (or env INSTRUQT_TIMEOUT)")
 	pf.Bool("json", false, "output JSON instead of a table")
 
 	cobra.OnInitialize(initConfig)
@@ -71,11 +72,11 @@ func Execute() {
 	}
 }
 
-// signalContext returns a context cancelled on SIGINT with a default timeout.
+// signalContext returns a context cancelled on SIGINT. Per-request timeouts are
+// enforced by the HTTP client (see --timeout), so no whole-command deadline is
+// imposed here, which would otherwise cap multi-request pagination.
 func signalContext() (context.Context, context.CancelFunc) {
-	ctx, cancelSig := signal.NotifyContext(context.Background(), os.Interrupt)
-	ctx, cancelTimeout := context.WithTimeout(ctx, 60*time.Second)
-	return ctx, func() { cancelTimeout(); cancelSig() }
+	return signal.NotifyContext(context.Background(), os.Interrupt)
 }
 
 // newClient constructs a client from resolved config, erroring early if the
@@ -90,7 +91,11 @@ func newClient() (*instruqt.Client, error) {
 	if endpoint == "" {
 		endpoint = instruqt.DefaultEndpoint
 	}
-	return instruqt.New(apiKey, instruqt.WithEndpoint(endpoint)), nil
+	opts := []instruqt.Option{instruqt.WithEndpoint(endpoint)}
+	if timeout := v.GetDuration("timeout"); timeout > 0 {
+		opts = append(opts, instruqt.WithTimeout(timeout))
+	}
+	return instruqt.New(apiKey, opts...), nil
 }
 
 // teamSlug returns the resolved team slug, erroring if unset.

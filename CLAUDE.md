@@ -30,7 +30,7 @@ GraphQL API. Module path: `github.com/eoinbrazil/instruqt-hotstart`.
 
 ```sh
 make build          # go build -o instruqt-hotstart .
-make test           # go test ./...   (currently 45 tests, must stay green)
+make test           # go test ./...   (currently 48 tests, must stay green)
 make vet            # go vet ./...
 make fmt            # gofmt -w
 ```
@@ -79,6 +79,6 @@ use `httptest` + table-driven cases; no mocking framework.
 
 ## Status
 
-Implemented, 45 tests green, vet/fmt clean. Live create→list→get against real
+Implemented, 48 tests green, vet/fmt clean. Live create→list→get against real
 Instruqt needs a real API key + team (not run in-repo). Use `--dry-run` to
 preview payloads without spending sandboxes.

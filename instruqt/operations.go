@@ -126,7 +126,11 @@ func (c *Client) HotStartPools(ctx context.Context, teamSlug string) ([]HotStart
 		if !out.HotStartPools.PageInfo.HasNextPage {
 			break
 		}
-		after = out.HotStartPools.PageInfo.EndCursor
+		next := out.HotStartPools.PageInfo.EndCursor
+		if next == "" || next == after {
+			return nil, fmt.Errorf("listing hot start pools for team %s: pagination stalled (empty or repeated cursor)", teamSlug)
+		}
+		after = next
 	}
 
 	return all, nil

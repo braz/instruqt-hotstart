@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -101,5 +102,25 @@ func TestHotStartPools_Paginates(t *testing.T) {
 	}
 	if secondAfter != "CUR" {
 		t.Errorf("second page After = %v, want CUR", secondAfter)
+	}
+}
+
+// TestHotStartPools_StalledCursor verifies the client errors (rather than
+// looping forever) when the server claims another page but returns an empty
+// cursor that never advances.
+func TestHotStartPools_StalledCursor(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		io.WriteString(w, `{"data":{"hotStartPools":{"nodes":[{"id":"1"}],"pageInfo":{"endCursor":"","hasNextPage":true}}}}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	c := New("k", WithEndpoint(srv.URL), WithHTTPClient(srv.Client()))
+	_, err := c.HotStartPools(context.Background(), "demo")
+	if err == nil {
+		t.Fatal("expected error for stalled pagination, got nil")
+	}
+	if !strings.Contains(err.Error(), "pagination stalled") {
+		t.Errorf("error should mention stalled pagination: %v", err)
 	}
 }

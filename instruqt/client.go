@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"time"
+	"unicode/utf8"
 )
 
 // DefaultEndpoint is the Instruqt GraphQL API endpoint.
@@ -32,6 +33,11 @@ func WithEndpoint(url string) Option {
 // WithHTTPClient overrides the underlying *http.Client.
 func WithHTTPClient(hc *http.Client) Option {
 	return func(c *Client) { c.httpClient = hc }
+}
+
+// WithTimeout sets the per-request HTTP timeout.
+func WithTimeout(d time.Duration) Option {
+	return func(c *Client) { c.httpClient.Timeout = d }
 }
 
 // New returns a Client authenticated with the given API key.
@@ -110,6 +116,10 @@ func (c *Client) execute(ctx context.Context, query string, vars any, out any) e
 func truncate(s string, n int) string {
 	if len(s) <= n {
 		return s
+	}
+	// Back up to a rune boundary so we never emit a split multi-byte rune.
+	for n > 0 && !utf8.RuneStart(s[n]) {
+		n--
 	}
 	return s[:n] + "…"
 }
