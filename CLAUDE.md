@@ -79,8 +79,29 @@ use `httptest` + table-driven cases; no mocking framework.
 - Profiles fill only unset fields and never set `type` or `name`. Table in
   `instruqt/profiles.go`.
 
+## Committing (evnx pre-commit/pre-push gotcha)
+
+Hooks run via `prek` (see `prek.toml`). The **evnx** secret scanner
+(`evnx-scan` pre-commit, `evnx-scan-push` pre-push) scans the **working tree**,
+not just staged/pushed content, so it flags the real key in the untracked,
+gitignored `.env`. That's a false positive — `.env` is not tracked and is absent
+from all history. `prek.toml` now passes `--exclude .env` to both evnx hooks,
+which suppresses it (verified: commit + push pass cleanly, no `--no-verify`
+needed). `--exclude` takes a single value; don't drop it. Commit messages must be
+Conventional Commits (`feat|fix|chore|test|docs|ci|refactor`), `--strict`.
+
+## Remote
+
+Public repo: `https://github.com/braz/instruqt-hotstart` (remote `origin`,
+branch `main`). Note the module path stays `github.com/eoinbrazil/...` — the
+GitHub org (`braz`) and the Go module path differ intentionally; don't align them.
+
 ## Status
 
-Implemented, 48 tests green, vet/fmt clean. Live create→list→get against real
-Instruqt needs a real API key + team (not run in-repo). Use `--dry-run` to
-preview payloads without spending sandboxes.
+Implemented, 48 tests green, vet/fmt clean. Latest work: fixed a pagination
+stall (empty/repeated cursor now errors), UTF-8-safe error truncation, and added
+a configurable per-request `--timeout` (default 30s, env `INSTRUQT_TIMEOUT`) via
+`instruqt.WithTimeout`; the old hardcoded 60s whole-command context was removed
+(only SIGINT cancels now). Live create→list→get against real Instruqt needs a
+real API key + team (not run in-repo). Use `--dry-run` to preview payloads
+without spending sandboxes.
