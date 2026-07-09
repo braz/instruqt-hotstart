@@ -44,7 +44,7 @@ pages are fetched before returning; `ctx` cancellation aborts the loop.
 | `tracks` | `[String!]` | track IDs |
 | `configs` | `[String!]` | config IDs |
 | `size` | `Int` | sandboxes per track |
-| `name` | `String` | pool name |
+| `name` | `String` | pool name (optional in the schema; **required by this tool**) |
 | `auto_refill` | `Boolean` | auto-refill the pool |
 | `starts_at` | `Time` | scheduled start (begin creating sandboxes) |
 | `ends_at` | `Time` | scheduled stop (removes only unclaimed sandboxes) |
@@ -178,6 +178,8 @@ func (in HotStartPoolInput) Validate() (warnings []string, err error)
   - `ends_at` before `starts_at`
   - `size <= 0` (when set)
   - missing required `type`
+  - missing required `name` (also enforced as a required CLI flag on `create`,
+    which cobra checks before `Validate` and which `--force` cannot bypass)
 - **Warnings** (printed, never block):
   - no `ends_at` set → "indefinite pool, bills continuously"
   - `starts_at` is closer than the **size-tiered lead time** below → "below
@@ -250,9 +252,11 @@ Precedence: explicit flag > env > config file > default.
 ### `create` flags
 
 Map to `HotStartPoolInput`, all overridable: `--type`, `--size`, `--tracks`
-(repeatable/CSV), `--configs`, `--name`, `--auto-refill`, `--starts-at`
-(RFC3339 or relative e.g. `+1h`), `--ends-at`, `--region`, `--invite-id`, plus
-`--profile`, `--registrations`, `--dry-run`, `--force`.
+(repeatable/CSV), `--configs`, `--name` (**required**), `--auto-refill`,
+`--starts-at` (RFC3339 or relative e.g. `+1h`), `--ends-at`, `--region`,
+`--invite-id`, plus `--profile`, `--registrations`, `--dry-run`, `--force`.
+`--name` is marked required at the cobra level (checked before `Validate`, not
+bypassable by `--force`); profiles do not supply a name.
 
 Flow: build input → apply profile to unset fields → `Validate()` → print
 warnings to stderr → abort on hard error unless `--force` → send (or, with

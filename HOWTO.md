@@ -77,8 +77,10 @@ you about anything risky, but it does **not** create anything or cost you money.
 ```sh
 ./instruqt-hotstart create \
   --type shared \
+  --name spring-workshop \
   --size 50 \
   --tracks track-a,track-b \
+  --auto-refill \
   --starts-at +2h \
   --ends-at +150m \
   --dry-run
@@ -87,6 +89,8 @@ you about anything risky, but it does **not** create anything or cost you money.
 A few things to know about the flags:
 
 - `--type` is **required** and must be `dedicated` or `shared`.
+- `--name` is **required** — give the pool a short, recognisable name.
+- `--auto-refill` (optional) keeps the pool topped up as sandboxes are claimed.
 - `--tracks` and `--configs` take a comma-separated list (or you can repeat the
   flag).
 - `--starts-at` and `--ends-at` accept either a full timestamp
@@ -103,9 +107,10 @@ The tool tries to stop you from wasting money. Two kinds of messages can appear:
   ones are "no ends_at set" (an open-ended pool keeps billing until you delete
   it) and "under the recommended provisioning lead time" (you scheduled the
   start too soon for a pool that size to warm up in time).
-- **Errors** stop the command. These are real mistakes: no `--type`, a size of
-  zero or less, or an end time that comes before the start time. If you are
-  certain you want to proceed anyway, add `--force`.
+- **Errors** stop the command. These are real mistakes: no `--type`, no
+  `--name`, a size of zero or less, or an end time that comes before the start
+  time. For most of these you can add `--force` to proceed anyway, but `--name`
+  is genuinely required and cannot be forced past.
 
 The recommended lead time grows with pool size:
 
@@ -124,8 +129,10 @@ When the dry run looks right, remove `--dry-run`:
 ```sh
 ./instruqt-hotstart create \
   --type shared \
+  --name spring-workshop \
   --size 50 \
   --tracks track-a,track-b \
+  --auto-refill \
   --starts-at +2h \
   --ends-at +150m
 ```
@@ -158,8 +165,8 @@ when you want machine-readable output for a script:
 
 If you are running a common kind of event, a **profile** fills in sensible
 defaults for you (auto-refill behaviour, an end time, and a suggested size).
-Anything you set explicitly still wins, and profiles never choose `--type` for
-you — you always pass that yourself.
+Anything you set explicitly still wins, and profiles never choose `--type` or
+`--name` for you — you always pass those yourself.
 
 Tell the profile how many people you expect with `--registrations`, and it
 suggests a size:
@@ -167,6 +174,7 @@ suggests a size:
 ```sh
 ./instruqt-hotstart create \
   --type shared \
+  --name spring-webinar \
   --profile webinar \
   --registrations 500 \
   --starts-at +2h \
@@ -199,6 +207,8 @@ yourself so the pool does not run forever.
   `--team` for `create` and `list`.
 - **"type is required"** — add `--type dedicated` or `--type shared`. Profiles
   do not set this.
+- **'required flag(s) "name" not set'** — add `--name <pool-name>`. Every pool
+  needs a name; profiles do not set it.
 - **"validation failed"** — read the message; fix the input, or add `--force`
   if you really mean it.
 

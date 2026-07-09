@@ -32,12 +32,12 @@ supplying it via `INSTRUQT_API_KEY` (see `env.example`). A `config.yaml`
 ## Usage
 
 ```sh
-# Create a pool (always supply --type: dedicated or shared)
-instruqt-hotstart create --team my-team --type shared --size 50 \
-  --tracks track-a,track-b --starts-at +2h --ends-at +150m
+# Create a pool (always supply --type: dedicated or shared, and --name)
+instruqt-hotstart create --team my-team --type shared --name spring-workshop --size 50 \
+  --tracks track-a,track-b --auto-refill --starts-at +2h --ends-at +150m
 
 # Preview without sending
-instruqt-hotstart create --team my-team --type shared --size 250 --starts-at +45m --dry-run
+instruqt-hotstart create --team my-team --type shared --name demo --size 250 --starts-at +45m --dry-run
 
 # List and inspect
 instruqt-hotstart list --team my-team
@@ -50,8 +50,9 @@ relative offset (`+90m`, `+2h`).
 ### Cost guardrails
 
 `create` validates the pool before sending. Hard errors (missing `type`,
-`size <= 0`, `ends_at` before `starts_at`) block unless you pass `--force`.
-Warnings never block:
+missing `name`, `size <= 0`, `ends_at` before `starts_at`) block unless you pass
+`--force`. `--name` is additionally a required flag enforced by the CLI itself,
+so `--force` cannot bypass it. Warnings never block:
 
 - **No `ends_at`** → indefinite pool that bills continuously.
 - **Insufficient lead time** → `starts_at` is closer than the recommended
@@ -69,8 +70,8 @@ Warnings never block:
 
 `--profile` pre-fills unset fields from event-type best practices; explicit
 flags always win. With `--registrations N`, ratio-based profiles suggest a size;
-fixed profiles ignore it. Note: profiles do **not** set `type` — always pass
-`--type` yourself.
+fixed profiles ignore it. Note: profiles do **not** set `type` or `name` —
+always pass `--type` and `--name` yourself.
 
 | Profile | auto_refill | end offset | default size | size ratio |
 |---|---|---|---|---|
@@ -83,7 +84,7 @@ fixed profiles ignore it. Note: profiles do **not** set `type` — always pass
 | `sales-demo` | on | none | 2 | fixed |
 
 ```sh
-instruqt-hotstart create --team my-team --type shared \
+instruqt-hotstart create --team my-team --type shared --name spring-webinar \
   --profile webinar --registrations 500 --starts-at +2h --dry-run
 # -> size 125, auto_refill on, ends_at = starts_at + 30m
 ```

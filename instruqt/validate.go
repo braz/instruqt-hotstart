@@ -42,6 +42,9 @@ func (in HotStartPoolInput) Validate(now time.Time) (warnings []string, err erro
 	if in.Type == "" {
 		errs = append(errs, errors.New("type is required (dedicated or shared)"))
 	}
+	if in.Name == nil || *in.Name == "" {
+		errs = append(errs, errors.New("name is required"))
+	}
 	if in.Size != nil && *in.Size <= 0 {
 		errs = append(errs, fmt.Errorf("size must be positive, got %d", *in.Size))
 	}

@@ -21,7 +21,7 @@ func init() {
 	f.Int("size", 0, "sandboxes per track")
 	f.StringSlice("tracks", nil, "track IDs (repeatable or comma-separated)")
 	f.StringSlice("configs", nil, "config IDs (repeatable or comma-separated)")
-	f.String("name", "", "pool name")
+	f.String("name", "", "pool name (required)")
 	f.Bool("auto-refill", false, "auto-refill the pool")
 	f.String("starts-at", "", "scheduled start: RFC3339 or relative (e.g. +1h)")
 	f.String("ends-at", "", "scheduled end: RFC3339 or relative (e.g. +90m)")
@@ -31,6 +31,8 @@ func init() {
 	f.Int("registrations", 0, "expected registrations (drives profile sizing)")
 	f.Bool("dry-run", false, "print the resolved payload without sending")
 	f.Bool("force", false, "proceed despite validation errors")
+
+	_ = c.MarkFlagRequired("name")
 
 	rootCmd.AddCommand(c)
 }

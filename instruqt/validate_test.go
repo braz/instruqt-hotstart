@@ -14,11 +14,14 @@ func TestValidate_HardErrors(t *testing.T) {
 		name string
 		in   HotStartPoolInput
 	}{
-		{"missing type", HotStartPoolInput{Size: intPtr(10)}},
-		{"size zero", HotStartPoolInput{Type: PoolTypeShared, Size: intPtr(0)}},
-		{"size negative", HotStartPoolInput{Type: PoolTypeShared, Size: intPtr(-1)}},
+		{"missing type", HotStartPoolInput{Name: strPtr("p"), Size: intPtr(10)}},
+		{"missing name", HotStartPoolInput{Type: PoolTypeShared, Size: intPtr(10)}},
+		{"empty name", HotStartPoolInput{Type: PoolTypeShared, Name: strPtr(""), Size: intPtr(10)}},
+		{"size zero", HotStartPoolInput{Type: PoolTypeShared, Name: strPtr("p"), Size: intPtr(0)}},
+		{"size negative", HotStartPoolInput{Type: PoolTypeShared, Name: strPtr("p"), Size: intPtr(-1)}},
 		{"ends before starts", HotStartPoolInput{
 			Type:     PoolTypeShared,
+			Name:     strPtr("p"),
 			StartsAt: &start,
 			EndsAt:   ptrTime(start.Add(-time.Hour)),
 		}},
@@ -37,6 +40,7 @@ func TestValidate_Clean(t *testing.T) {
 	start := refNow.Add(2 * time.Hour)
 	in := HotStartPoolInput{
 		Type:     PoolTypeShared,
+		Name:     strPtr("pool"),
 		Size:     intPtr(10),
 		StartsAt: &start,
 		EndsAt:   ptrTime(start.Add(30 * time.Minute)),
@@ -52,7 +56,7 @@ func TestValidate_Clean(t *testing.T) {
 
 func TestValidate_NoEndsAtWarns(t *testing.T) {
 	start := refNow.Add(2 * time.Hour)
-	in := HotStartPoolInput{Type: PoolTypeShared, Size: intPtr(10), StartsAt: &start}
+	in := HotStartPoolInput{Type: PoolTypeShared, Name: strPtr("pool"), Size: intPtr(10), StartsAt: &start}
 	warnings, err := in.Validate(refNow)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -88,6 +92,7 @@ func TestValidate_LeadTimeTiers(t *testing.T) {
 			start := refNow.Add(tt.lead)
 			in := HotStartPoolInput{
 				Type:     PoolTypeShared,
+				Name:     strPtr("pool"),
 				Size:     intPtr(tt.size),
 				StartsAt: &start,
 				EndsAt:   ptrTime(start.Add(30 * time.Minute)),
