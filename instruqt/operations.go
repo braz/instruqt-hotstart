@@ -34,8 +34,38 @@ const hotStartPoolsQuery = `query hotStartPools($teamSlug: String, $paging: Pagi
 	}
 }`
 
+const sandboxConfigsQuery = `query sandboxConfigs($teamSlug: String) {
+	sandboxConfigs(teamSlug: $teamSlug) {
+		id
+		slug
+		name
+		version
+	}
+}`
+
 // defaultPageSize is the number of pools requested per page when listing.
 const defaultPageSize = 100
+
+// SandboxConfig identifies a sandbox config. Its ID is what a hot start pool's
+// `configs` field expects (the API resolves it to a config version).
+type SandboxConfig struct {
+	ID      string `json:"id"`
+	Slug    string `json:"slug"`
+	Name    string `json:"name"`
+	Version int    `json:"version"`
+}
+
+// SandboxConfigs lists the sandbox configs for a team. Use these IDs with the
+// create command's --configs flag.
+func (c *Client) SandboxConfigs(ctx context.Context, teamSlug string) ([]SandboxConfig, error) {
+	var out struct {
+		SandboxConfigs []SandboxConfig `json:"sandboxConfigs"`
+	}
+	if err := c.execute(ctx, sandboxConfigsQuery, map[string]any{"teamSlug": teamSlug}, &out); err != nil {
+		return nil, fmt.Errorf("listing sandbox configs for team %s: %w", teamSlug, err)
+	}
+	return out.SandboxConfigs, nil
+}
 
 // CreateHotStartPool creates a new hot start pool and returns it.
 func (c *Client) CreateHotStartPool(ctx context.Context, in HotStartPoolInput) (*HotStartPool, error) {

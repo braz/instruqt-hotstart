@@ -9,6 +9,24 @@ import (
 	"testing"
 )
 
+func TestSandboxConfigs(t *testing.T) {
+	var cap capturedRequest
+	c := newTestClient(t, http.StatusOK,
+		`{"data":{"sandboxConfigs":[{"id":"cfg1","slug":"my-track","name":"My Track","version":3}]}}`,
+		&cap)
+
+	configs, err := c.SandboxConfigs(context.Background(), "demo")
+	if err != nil {
+		t.Fatalf("configs: %v", err)
+	}
+	if len(configs) != 1 || configs[0].ID != "cfg1" || configs[0].Slug != "my-track" || configs[0].Version != 3 {
+		t.Errorf("unexpected configs: %+v", configs)
+	}
+	if cap.variables["teamSlug"] != "demo" {
+		t.Errorf("teamSlug = %v, want demo", cap.variables["teamSlug"])
+	}
+}
+
 func TestCreateHotStartPool(t *testing.T) {
 	var cap capturedRequest
 	c := newTestClient(t, http.StatusOK,

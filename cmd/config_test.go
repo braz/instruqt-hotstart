@@ -29,6 +29,11 @@ func writeConfig(t *testing.T, team string) string {
 }
 
 func TestConfigPrecedence(t *testing.T) {
+	// Isolate from any ambient INSTRUQT_* env vars in the caller's shell.
+	// Viper treats an empty env var as unset (allowEmptyEnv defaults to false).
+	t.Setenv("INSTRUQT_TEAM", "")
+	t.Setenv("INSTRUQT_API_KEY", "")
+
 	cfgPath := writeConfig(t, "fileteam")
 
 	t.Run("config file only", func(t *testing.T) {

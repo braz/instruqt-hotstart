@@ -41,8 +41,8 @@ pages are fetched before returning; `ctx` cancellation aborts the loop.
 | Field | GraphQL type | Meaning |
 |---|---|---|
 | `type` | `HotStartPoolType` | `dedicated` \| `shared` |
-| `tracks` | `[String!]` | track IDs |
-| `configs` | `[String!]` | config IDs |
+| `tracks` | `[String!]` | track IDs (**rejected by the API for pool creation** — see note below) |
+| `configs` | `[String!]` | sandbox config IDs — **this is what pools are built from** |
 | `size` | `Int` | sandboxes per track |
 | `name` | `String` | pool name (optional in the schema; **required by this tool**) |
 | `auto_refill` | `Boolean` | auto-refill the pool |
@@ -53,6 +53,15 @@ pages are fetched before returning; `ctx` cancellation aborts the loop.
 | `invite_id` | `String` | invite to scope the pool |
 
 `organization_slug` exists in the schema but is **excluded** from this tool.
+
+**Tracks vs. configs (runtime API behavior, discovered post-launch):** although
+the schema lists both `tracks` and `configs`, the API rejects `tracks` for pool
+creation, returning `tracks: must be blank; config_versions: cannot be blank`.
+Pools must be created from **sandbox config IDs** (`configs`). The tool
+therefore: (a) provides a `configs` command that lists a team's sandbox configs
+(id/slug/name/version) via the `sandboxConfigs(teamSlug:)` query, and (b) warns
+when `--tracks` is used on `create`. The `SandboxConfig` type and
+`Client.SandboxConfigs(ctx, teamSlug)` method live in `instruqt/operations.go`.
 
 ### `HotStartPool` (return) fields we consume
 

@@ -32,6 +32,19 @@ func renderPool(w io.Writer, p *instruqt.HotStartPool, asJSON bool) error {
 	return renderPools(w, []instruqt.HotStartPool{*p}, false)
 }
 
+// renderConfigs writes sandbox configs as JSON or a table.
+func renderConfigs(w io.Writer, configs []instruqt.SandboxConfig, asJSON bool) error {
+	if asJSON {
+		return writeJSON(w, configs)
+	}
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(tw, "ID\tSLUG\tNAME\tVERSION")
+	for _, c := range configs {
+		fmt.Fprintf(tw, "%s\t%s\t%s\t%d\n", c.ID, c.Slug, c.Name, c.Version)
+	}
+	return tw.Flush()
+}
+
 func writeJSON(w io.Writer, v any) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
