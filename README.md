@@ -1,0 +1,114 @@
+# instruqt-hotstart
+
+A small Go CLI to create and inspect [Instruqt](https://instruqt.com) **hot
+start pools** — pools of sandboxes provisioned before tracks start — via the
+Instruqt GraphQL API. It wraps `createHotStartPool`, `hotStartPools`, and
+`hotStartPool` with cost-safety guardrails and best-practice profiles.
+
+All operations scope by **team**.
+
+## Install
+
+```sh
+go build -o instruqt-hotstart .
+```
+
+## Authentication & configuration
+
+The CLI resolves settings with this precedence: **flag > env > config file > default**.
+
+| Setting | Flag | Env | Default |
+|---|---|---|---|
+| API key | `--api-key` | `INSTRUQT_API_KEY` | — (required) |
+| Team slug | `--team` | `INSTRUQT_TEAM` | — (required for create/list) |
+| Endpoint | `--endpoint` | `INSTRUQT_ENDPOINT` | `https://play.instruqt.com/graphql` |
+| Config file | `--config` | — | `./config.yaml` if present |
+| Output | `--json` | — | table |
+
+Generate an API key in the Instruqt web UI under **Settings → API keys**. Prefer
+supplying it via `INSTRUQT_API_KEY` (see `env.example`). A `config.yaml`
+(see `config.example.yaml`) can hold non-secret defaults like `team`.
+
+## Usage
+
+```sh
+# Create a pool (always supply --type: dedicated or shared)
+instruqt-hotstart create --team my-team --type shared --size 50 \
+  --tracks track-a,track-b --starts-at +2h --ends-at +150m
+
+# Preview without sending
+instruqt-hotstart create --team my-team --type shared --size 250 --starts-at +45m --dry-run
+
+# List and inspect
+instruqt-hotstart list --team my-team
+instruqt-hotstart get --id <pool-id> --json
+```
+
+`--starts-at` / `--ends-at` accept RFC3339 (`2026-07-09T14:00:00Z`) or a
+relative offset (`+90m`, `+2h`).
+
+### Cost guardrails
+
+`create` validates the pool before sending. Hard errors (missing `type`,
+`size <= 0`, `ends_at` before `starts_at`) block unless you pass `--force`.
+Warnings never block:
+
+- **No `ends_at`** → indefinite pool that bills continuously.
+- **Insufficient lead time** → `starts_at` is closer than the recommended
+  provisioning lead time for the pool size:
+
+  | Size | Recommended lead time |
+  |---|---|
+  | `< 50` | 20 minutes |
+  | `50–100` | 30 minutes |
+  | `100 < size < 200` | 1 hour |
+  | `200–400` | 1 hour 30 minutes |
+  | `> 400` | 1h30m minimum (test provisioning time) |
+
+### Profiles
+
+`--profile` pre-fills unset fields from event-type best practices; explicit
+flags always win. With `--registrations N`, ratio-based profiles suggest a size;
+fixed profiles ignore it. Note: profiles do **not** set `type` — always pass
+`--type` yourself.
+
+| Profile | auto_refill | end offset | default size | size ratio |
+|---|---|---|---|---|
+| `self-paced` | on | none (always-hot) | 3 | fixed |
+| `live-workshop` | off | +30m | 20 | 0.70 |
+| `webinar` | on | +30m | 100 | 0.25 |
+| `multi-day` | off | +30m | 20 | 1.0 |
+| `conference-session` | off | +45m | 80 | 0.75 |
+| `booth-demo` | on | none | 4 | fixed |
+| `sales-demo` | on | none | 2 | fixed |
+
+```sh
+instruqt-hotstart create --team my-team --type shared \
+  --profile webinar --registrations 500 --starts-at +2h --dry-run
+# -> size 125, auto_refill on, ends_at = starts_at + 30m
+```
+
+### Pool configuration vs. `type`
+
+The Instruqt API `type` enum is only `dedicated` | `shared`. The
+best-practices doc's "scheduled", "invite-scoped", and "always-hot" pools are
+*configurations* layered on top, mapped to existing fields:
+
+- **scheduled** → `--starts-at` / `--ends-at`
+- **invite-scoped** → `--invite-id`
+- **always-hot** → no schedule + `--auto-refill`
+
+See the Instruqt
+[hot starts best practices](https://docs.instruqt.com/resources/hot-starts-best-practices)
+for sizing and scheduling guidance; the profile values above encode it.
+
+## Development
+
+```sh
+make test   # go test ./...
+make vet    # go vet ./...
+make fmt    # gofmt -w
+make build
+```
+
+Design and rationale: `docs/superpowers/specs/2026-07-09-instruqt-hotstart-design.md`.

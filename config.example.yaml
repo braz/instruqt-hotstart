@@ -1,0 +1,7 @@
+# Instruqt hot start CLI configuration.
+# Copy to config.yaml (gitignored) and edit. Flags override these values;
+# secrets are better supplied via environment variables (see .env.example).
+
+# team: my-team-slug
+# endpoint: https://play.instruqt.com/graphql
+# api-key: ""   # prefer INSTRUQT_API_KEY env var instead
